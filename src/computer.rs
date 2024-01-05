@@ -85,7 +85,7 @@ impl Computer {
         }
         else if val >= 0x1000 && val < 0x2000 { // jump
             self.cpu.pc = val & 0x0FFF;
-            //let ct: Vec<u8> = self.display().dump().into_iter().map(|m| m as u8).collect();
+            let ct: Vec<u8> = self.display().dump().into_iter().map(|m| m as u8).collect();
             //fs::write("fb.dat", ct).unwrap();
         }
         else if val >= 0x2000 && val < 0x3000 { // call
@@ -139,12 +139,10 @@ impl Computer {
         }
         else if val >= 0x7000 && val < 0x8000 { // add register vx
 
-            //println!("add vx");
-
-            let x = val & 0x0FFF;
-            let idx = x >> 8;
-
-            self.cpu.v[idx as usize] += (val & 0x00FF)  as u8;
+            let x = ((val & 0x0F00) >> 8) as u8;
+            let kk = (val & 0x00FF) as u8;
+            let sum = self.cpu.v[x as usize] as u16 + kk as u16;
+            self.cpu.v[x as usize] = (sum & 0x00FF) as u8;
         }
         else if val >= 0x8000 && val < 0x9000 && (val & 0x000F) == 0x0000  { //ld vx vy
             let x = ((val & 0x0F00) >> 8) as u8;
@@ -276,11 +274,11 @@ impl Computer {
 
             println!("start_idx: {}, end_idx: {}", start_idx, end_idx);
 
-            // sprite.copy_from_slice(&self.memory[start_idx..end_idx]);
-            for d in start_idx..end_idx {
-                sprite[d - start_idx] = self.memory[start_idx];
+            for d in 0..n {
+                sprite[d as usize] = self.memory[start_idx + d as usize];
             }
 
+            //sprite.copy_from_slice(&self.memory[start_idx..end_idx]);
 
             //println!("{:?}", sprite);
 

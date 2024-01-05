@@ -11,13 +11,20 @@ impl Display {
 
     pub fn set(&mut self, x: usize, y: usize, data: bool) {
         let idx = y * 64 + x;
-        self.framebuffer[idx] = data;
+        if idx < 2048 {
+            self.framebuffer[idx] = data;
+        }
         //println!("idx: {}, fb: {}, data: {}", idx, self.framebuffer[idx], data);
     }
 
     pub fn get(&self, x: usize, y: usize) -> bool {
         let idx = y * 64 + x;
-        self.framebuffer[idx]
+        if idx < 2048 {
+            self.framebuffer[idx]
+        }
+        else{
+            false
+        }
     }
 
     pub fn clear(&mut self) {
