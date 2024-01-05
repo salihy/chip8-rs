@@ -1,5 +1,5 @@
-use std::{env, fs, io::stdin, io::stdout, io::Write};
-use chip8_rs::{computer::{self, Computer}, cpu::Cpu, display};
+use std::{env, fs};
+use chip8_rs::computer::Computer;
 use chip8_rs::display::Display;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
@@ -7,11 +7,9 @@ use piston::PressEvent;
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
-use std::sync::Arc;
 
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
-    rotation: f64,  // Rotation for the square.
     
 }
 
@@ -51,7 +49,7 @@ impl App {
         });
     }
 
-    fn update(&mut self, args: &UpdateArgs) {
+    fn update(&mut self, _args: &UpdateArgs) {
         // Rotate 2 radians per second.
     }
 }
@@ -81,7 +79,6 @@ fn main() {
     // Create a new game and run it.
     let mut app = App {
         gl: GlGraphics::new(opengl),
-        rotation: 0.0,
     };
 
     let mut events = Events::new(EventSettings::new());

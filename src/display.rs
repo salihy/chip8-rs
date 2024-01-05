@@ -10,12 +10,9 @@ impl Display {
     }
 
     pub fn set(&mut self, x: usize, y: usize, data: bool) {
-        
-        println!("fb set");
         let idx = y * 64 + x;
         self.framebuffer[idx] = data;
-
-        println!("idx: {}, fb: {}, data: {}", idx, self.framebuffer[idx], data);
+        //println!("idx: {}, fb: {}, data: {}", idx, self.framebuffer[idx], data);
     }
 
     pub fn get(&self, x: usize, y: usize) -> bool {

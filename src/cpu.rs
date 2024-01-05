@@ -6,6 +6,7 @@ pub struct Cpu {
     pub st: u8,
     pub pc: u16,
     pub i: u16,
+    stack: [u16; 16]
 }
 
 impl Cpu {
@@ -17,7 +18,28 @@ impl Cpu {
             st: 0,
             pc: 0x0200,
             i: 0,
+            stack: [0; 16]
         }
+    }
+
+    pub fn stack_push(&mut self, stack_val: u16) -> Result<u16, &'static str> {
+        if self.sp >= 16 {
+            return Err("stack overflow");
+        }
+        self.stack[self.sp as usize] = stack_val;
+        self.sp += 1;
+        
+        Ok(stack_val)
+    }
+
+    pub fn stack_pop(&mut self) -> Result<u16, &'static str> {
+        if self.sp <= 0 {
+            return  Err("stack overflow");
+        }
+
+        self.sp -= 1;
+
+        Ok(self.stack[self.sp as usize])
     }
 
 }
