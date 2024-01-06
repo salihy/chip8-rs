@@ -3,7 +3,7 @@ use chip8_rs::computer::Computer;
 use chip8_rs::display::Display;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
-use piston::PressEvent;
+use piston::{PressEvent, ReleaseEvent};
 use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
@@ -96,7 +96,25 @@ fn main() {
         }
 
         if let Some(args) = e.press_args() {
-            println!("{:?}", args);
+
+            match args {
+                piston::Button::Keyboard(k) => {
+                    //println!("{:?}", k);
+                    comp.set_key(k);
+                },
+                _ => {}
+            }
+        }
+        
+        if let Some(args) = e.release_args() {
+            match args {
+                piston::Button::Keyboard(k) => {
+                    //println!("{:?}", k);
+                    
+                    comp.reset_key(k);
+                },
+                _ => {}
+            }
         }
     }
 }

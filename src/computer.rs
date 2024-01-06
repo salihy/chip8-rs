@@ -6,7 +6,8 @@ use crate::display::Display;
 pub struct Computer {
     memory: [u8; 4096],
     cpu: Cpu,
-    display: Display
+    display: Display,
+    keyboard: [bool; 16]
 }
 
 impl Computer {
@@ -14,6 +15,9 @@ impl Computer {
         self.cpu = Cpu::new();
         self.display = Display::new();
 
+        for n in 0..16 {
+            self.keyboard[n] = false;
+        }
         for n in 0..4096 {
             self.memory[n] = 0;
         }
@@ -56,7 +60,116 @@ impl Computer {
         Self {
             cpu: Cpu::new(),
             display: Display::new(),
-            memory: mem
+            memory: mem,
+            keyboard: [false; 16]
+        }
+    }
+
+    pub fn set_key(&mut self, k: piston::Key){
+        match k {
+            piston::Key::D1 => {
+                self.keyboard[0x00] = true;
+            },
+            piston::Key::D2 => {
+                self.keyboard[0x01] = true;
+            },
+            piston::Key::D3 => {
+                self.keyboard[0x02] = true;
+            },
+            piston::Key::D4 => {
+                self.keyboard[0x03] = true;
+            },
+            piston::Key::Q => {
+                self.keyboard[0x04] = true;
+            },
+            piston::Key::W => {
+                self.keyboard[0x05] = true;
+            },
+            piston::Key::E => {
+                self.keyboard[0x06] = true;
+            },
+            piston::Key::R => {
+                self.keyboard[0x07] = true;
+            },
+            piston::Key::A => {
+                self.keyboard[0x08] = true;
+            },
+            piston::Key::S => {
+                self.keyboard[0x09] = true;
+            },
+            piston::Key::D => {
+                self.keyboard[0x0A] = true;
+            },
+            piston::Key::F => {
+                self.keyboard[0x0B] = true;
+            },
+            piston::Key::Z => {
+                self.keyboard[0x0C] = true;
+            },
+            piston::Key::X => {
+                self.keyboard[0x0D] = true;
+            },
+            piston::Key::C => {
+                self.keyboard[0x0E] = true;
+            },
+            piston::Key::V => {
+                self.keyboard[0x0F] = true;
+            },
+            _ => {}
+        }
+    }
+
+    pub fn reset_key(&mut self, k: piston::Key){
+        match k {
+            piston::Key::D1 => {
+                self.keyboard[0x00] = false;
+            },
+            piston::Key::D2 => {
+                self.keyboard[0x01] = false;
+            },
+            piston::Key::D3 => {
+                self.keyboard[0x02] = false;
+            },
+            piston::Key::D4 => {
+                self.keyboard[0x03] = false;
+            },
+            piston::Key::Q => {
+                self.keyboard[0x04] = false;
+            },
+            piston::Key::W => {
+                self.keyboard[0x05] = false;
+            },
+            piston::Key::E => {
+                self.keyboard[0x06] = false;
+            },
+            piston::Key::R => {
+                self.keyboard[0x07] = false;
+            },
+            piston::Key::A => {
+                self.keyboard[0x08] = false;
+            },
+            piston::Key::S => {
+                self.keyboard[0x09] = false;
+            },
+            piston::Key::D => {
+                self.keyboard[0x0A] = false;
+            },
+            piston::Key::F => {
+                self.keyboard[0x0B] = false;
+            },
+            piston::Key::Z => {
+                self.keyboard[0x0C] = false;
+            },
+            piston::Key::X => {
+                self.keyboard[0x0D] = false;
+            },
+            piston::Key::C => {
+                self.keyboard[0x0E] = false;
+            },
+            piston::Key::V => {
+                self.keyboard[0x0F] = false;
+            },
+            _ => {}
         }
     }
 
@@ -268,11 +381,11 @@ impl Computer {
             let n: u8 = (val & 0x000F) as u8;
 
             let start_idx = self.cpu.i as usize;
-            let end_idx = (self.cpu.i + n as u16) as usize;
+            //let end_idx = (self.cpu.i + n as u16) as usize;
 
             let mut sprite:[u8; 15] = [0; 15];
 
-            println!("start_idx: {}, end_idx: {}", start_idx, end_idx);
+            //println!("start_idx: {}, end_idx: {}", start_idx, end_idx);
 
             for d in 0..n {
                 sprite[d as usize] = self.memory[start_idx + d as usize];
@@ -313,21 +426,46 @@ impl Computer {
                 }
             }
         }
-        //not complete
         else if val & 0xF0FF == 0xE09E { //skp Vx
-            self.cpu.pc -= 2; //key not pressed
+            let x: u8 = ((val & 0x0F00) >> 8) as u8;
+
+            if self.keyboard[self.cpu.v[x as usize] as usize] {
+                self.cpu.pc += 2; //key pressed
+            }
+
         }
-        //not complete
         else if val & 0xF0FF == 0xE0A1 { //sknp Vx
-            self.cpu.pc -= 2; //key not pressed
+            
+            let x: u8 = ((val & 0x0F00) >> 8) as u8;
+
+            if !self.keyboard[self.cpu.v[x as usize] as usize] {
+                self.cpu.pc += 2; //key not pressed
+            }
         }
         else if val & 0xF0FF == 0xF007 { //ld vx dt
             let x: u8 = ((val & 0x0F00) >> 8) as u8;
             self.cpu.v[x as usize] = self.cpu.dt;
         }
-        //not complete
         else if val & 0xF0FF == 0xF00A { //ld vx k
-            self.cpu.pc -= 2; //key not pressed
+            let x: usize = ((val & 0x0F00) >> 8) as usize;
+
+            let mut keypressed = false;
+            let mut pressed_key: usize = 0;
+
+            for d in 0x00..0x0F {
+                if self.keyboard[d] {
+                    keypressed = true;
+                    pressed_key = d;
+                }
+            }
+
+            if keypressed {
+                self.cpu.v[x] = pressed_key as u8; 
+            }
+            else {
+                self.cpu.pc -= 2; //key not pressed
+            }
+
         }
         else if val & 0xF0FF == 0xF015 { //ld dt vx
             let x: u8 = ((val & 0x0F00) >> 8) as u8;
